@@ -22,7 +22,7 @@ class AdvancedScreenClicker:
     def __init__(self, root):
         self.root = root
         self.root.title("Advanced Screen Clicker")
-        self.root.geometry("500x500")
+        self.root.geometry("500x550")  # Increased height for new UI elements
         self.root.resizable(False, False)
         
         # Settings file path
@@ -33,6 +33,8 @@ class AdvancedScreenClicker:
         self.image1_position = None
         self.image2 = None
         self.image2_position = None
+        self.image3 = None  # Added new image3
+        self.image3_position = None  # Added new image3 position
         self.position3 = None
         self.monitoring = False
         self.monitor_thread = None
@@ -61,6 +63,10 @@ class AdvancedScreenClicker:
             if self.image2_position:
                 settings["image2_position"] = list(self.image2_position)
             
+            # Save image3 settings
+            if self.image3_position:
+                settings["image3_position"] = list(self.image3_position)
+            
             # Save position3
             if self.position3:
                 settings["position3"] = list(self.position3)
@@ -81,6 +87,12 @@ class AdvancedScreenClicker:
                 self.image2.save(buffered, format="PNG")
                 img_str = base64.b64encode(buffered.getvalue()).decode()
                 settings["image2"] = img_str
+                
+            if self.image3:
+                buffered = BytesIO()
+                self.image3.save(buffered, format="PNG")
+                img_str = base64.b64encode(buffered.getvalue()).decode()
+                settings["image3"] = img_str
             
             # Write settings to file
             with open(self.settings_file, "w") as f:
@@ -106,6 +118,10 @@ class AdvancedScreenClicker:
                 # Load image2 settings
                 if "image2_position" in settings:
                     self.image2_position = tuple(settings["image2_position"])
+                    
+                # Load image3 settings
+                if "image3_position" in settings:
+                    self.image3_position = tuple(settings["image3_position"])
                 
                 # Load position3
                 if "position3" in settings:
@@ -127,6 +143,11 @@ class AdvancedScreenClicker:
                 if "image2" in settings:
                     img_data = base64.b64decode(settings["image2"])
                     self.image2 = Image.open(BytesIO(img_data))
+                    
+                # Load image3 if it exists
+                if "image3" in settings:
+                    img_data = base64.b64decode(settings["image3"])
+                    self.image3 = Image.open(BytesIO(img_data))
                 
                 print(f"Settings loaded from {self.settings_file}")
                 return True
@@ -162,34 +183,45 @@ class AdvancedScreenClicker:
         self.image2_pos_label = Label(main_frame, text="Not selected")
         self.image2_pos_label.grid(row=3, column=1, sticky="w", padx=5)
         
+        # Instructions for Image 3
+        Label(main_frame, text="3. Select Image 3 for left-click", font=("Arial", 10, "bold")).grid(row=4, column=0, sticky="w", pady=(10, 5))
+        
+        # Button to select third target image
+        self.image3_btn = Button(main_frame, text="Select Image 3", command=self.select_image3)
+        self.image3_btn.grid(row=5, column=0, sticky="w", padx=5, pady=5)
+        
+        # Display selected image 3 position
+        self.image3_pos_label = Label(main_frame, text="Not selected")
+        self.image3_pos_label.grid(row=5, column=1, sticky="w", padx=5)
+        
         # Instructions for Position 3
-        Label(main_frame, text="3. Select Position 3 for final left-click", font=("Arial", 10, "bold")).grid(row=4, column=0, sticky="w", pady=(10, 5))
+        Label(main_frame, text="4. Select Position 3 for final left-click", font=("Arial", 10, "bold")).grid(row=6, column=0, sticky="w", pady=(10, 5))
         
         # Button to select final position
         self.pos3_btn = Button(main_frame, text="Select Position 3", command=self.select_position3)
-        self.pos3_btn.grid(row=5, column=0, sticky="w", padx=5, pady=5)
+        self.pos3_btn.grid(row=7, column=0, sticky="w", padx=5, pady=5)
         
         # Display selected final position
         self.pos3_label = Label(main_frame, text="Not selected")
-        self.pos3_label.grid(row=5, column=1, sticky="w", padx=5)
+        self.pos3_label.grid(row=7, column=1, sticky="w", padx=5)
         
         # Loop Delay Slider
-        Label(main_frame, text="Loop Delay (seconds):", font=("Arial", 10)).grid(row=6, column=0, sticky="w", pady=(15, 0))
+        Label(main_frame, text="Loop Delay (seconds):", font=("Arial", 10)).grid(row=8, column=0, sticky="w", pady=(15, 0))
         self.loop_delay_slider = Scale(main_frame, from_=1, to=60, orient=HORIZONTAL, length=200,
                                       command=self.update_loop_delay)
         self.loop_delay_slider.set(self.loop_delay)
-        self.loop_delay_slider.grid(row=7, column=0, columnspan=2, sticky="w", padx=5, pady=(0, 10))
+        self.loop_delay_slider.grid(row=9, column=0, columnspan=2, sticky="w", padx=5, pady=(0, 10))
         
         # Click Delay Slider
-        Label(main_frame, text="Click Delay (seconds):", font=("Arial", 10)).grid(row=8, column=0, sticky="w", pady=(5, 0))
+        Label(main_frame, text="Click Delay (seconds):", font=("Arial", 10)).grid(row=10, column=0, sticky="w", pady=(5, 0))
         self.click_delay_slider = Scale(main_frame, from_=0.01, to=5.0, resolution=0.01, orient=HORIZONTAL, length=200,
                                        command=self.update_click_delay)
         self.click_delay_slider.set(self.click_delay)
-        self.click_delay_slider.grid(row=9, column=0, columnspan=2, sticky="w", padx=5, pady=(0, 10))
+        self.click_delay_slider.grid(row=11, column=0, columnspan=2, sticky="w", padx=5, pady=(0, 10))
         
         # Control buttons frame
         control_frame = Frame(main_frame)
-        control_frame.grid(row=10, column=0, columnspan=2, pady=10, sticky="w")
+        control_frame.grid(row=12, column=0, columnspan=2, pady=10, sticky="w")
         
         # Start/Stop button
         self.start_btn = Button(control_frame, text="Start Monitoring", command=self.toggle_monitoring)
@@ -201,11 +233,11 @@ class AdvancedScreenClicker:
         
         # Settings status label
         self.settings_label = Label(main_frame, text="No saved settings found", fg="gray")
-        self.settings_label.grid(row=11, column=0, columnspan=2, sticky="w", pady=(10, 0))
+        self.settings_label.grid(row=13, column=0, columnspan=2, sticky="w", pady=(10, 0))
         
         # Status label
         self.status_label = Label(main_frame, text="Ready", fg="blue")
-        self.status_label.grid(row=12, column=0, columnspan=2, sticky="w", pady=5)
+        self.status_label.grid(row=14, column=0, columnspan=2, sticky="w", pady=5)
     
     def update_loop_delay(self, value):
         self.loop_delay = float(value)
@@ -417,6 +449,105 @@ class AdvancedScreenClicker:
         finally:
             self.root.deiconify()
     
+    def select_image3(self):
+        """Capture a region of the screen as the third target image"""
+        self.root.iconify()
+        self.status_label.config(text="Selecting Image 3...")
+        
+        # Create a temporary transparent window to capture screen region
+        capture_window = tk.Toplevel(self.root)
+        capture_window.attributes("-alpha", 0.3)  # Semi-transparent
+        capture_window.attributes("-fullscreen", True)
+        capture_window.attributes("-topmost", True)
+        
+        # Draw canvas for selection
+        canvas = tk.Canvas(capture_window, cursor="cross")
+        canvas.pack(fill=tk.BOTH, expand=True)
+        
+        # Instructions
+        instruction_label = tk.Label(capture_window, text="Click and drag to select the image area", 
+                                     font=("Arial", 24), bg="white")
+        instruction_label.place(relx=0.5, rely=0.1, anchor="center")
+        
+        # Variables to store selection coordinates
+        start_x = start_y = end_x = end_y = 0
+        rect_id = None
+        
+        def on_press(event):
+            nonlocal start_x, start_y, rect_id
+            start_x, start_y = event.x, event.y
+            if rect_id:
+                canvas.delete(rect_id)
+            rect_id = canvas.create_rectangle(start_x, start_y, start_x, start_y, outline="red", width=2)
+        
+        def on_drag(event):
+            nonlocal rect_id, end_x, end_y
+            end_x, end_y = event.x, event.y
+            canvas.coords(rect_id, start_x, start_y, end_x, end_y)
+        
+        def on_release(event):
+            nonlocal start_x, start_y, end_x, end_y
+            # Ensure start coordinates are smaller than end coordinates
+            if start_x > end_x:
+                start_x, end_x = end_x, start_x
+            if start_y > end_y:
+                start_y, end_y = end_y, start_y
+                
+            # Capture the selected region
+            capture_window.destroy()
+            self.root.after(300, lambda: self.capture_image3(start_x, start_y, end_x, end_y))
+        
+        # Bind mouse events
+        canvas.bind("<ButtonPress-1>", on_press)
+        canvas.bind("<B1-Motion>", on_drag)
+        canvas.bind("<ButtonRelease-1>", on_release)
+        
+        # Cancel button
+        def cancel():
+            capture_window.destroy()
+            self.root.deiconify()
+            self.status_label.config(text="Image selection cancelled")
+        
+        cancel_btn = tk.Button(capture_window, text="Cancel", command=cancel)
+        cancel_btn.place(relx=0.5, rely=0.9, anchor="center")
+    
+    def capture_image3(self, start_x, start_y, end_x, end_y):
+        """Capture the selected region as image 3"""
+        try:
+            # Capture the screen region
+            screenshot = ImageGrab.grab(bbox=(start_x, start_y, end_x, end_y))
+            self.image3 = screenshot
+            self.image3_position = (start_x, start_y, end_x, end_y)
+            
+            # Display a thumbnail of the captured image
+            thumbnail = screenshot.copy()
+            thumbnail.thumbnail((100, 100))
+            self.image3_thumbnail = ImageTk.PhotoImage(thumbnail)
+            
+            # Create a small display for the thumbnail if it doesn't exist
+            if not hasattr(self, 'image3_display'):
+                self.image3_display = Label(self.root)
+                self.image3_display.place(x=350, y=270)  # Moved to the right side of the window below image2
+                
+            self.image3_display.config(image=self.image3_thumbnail)
+            
+            # Update position label
+            self.image3_pos_label.config(text=f"({start_x}, {start_y}) to ({end_x}, {end_y})")
+            
+            # Try to extract text with OCR for reference
+            try:
+                image3_text = pytesseract.image_to_string(self.image3).strip()
+                print(f"OCR Text from Image 3: {image3_text}")
+            except Exception as e:
+                print(f"OCR error on Image 3: {str(e)}")
+            
+            self.status_label.config(text="Image 3 captured successfully!")
+            
+        except Exception as e:
+            self.status_label.config(text=f"Error capturing image: {str(e)}")
+        finally:
+            self.root.deiconify()
+    
     def select_position3(self):
         """Select the final position for left-clicking"""
         self.root.iconify()
@@ -485,6 +616,7 @@ class AdvancedScreenClicker:
             self.start_btn.config(text="Start Monitoring")
             self.image1_btn.config(state=tk.NORMAL)
             self.image2_btn.config(state=tk.NORMAL)
+            self.image3_btn.config(state=tk.NORMAL)  # Enable image3 button
             self.pos3_btn.config(state=tk.NORMAL)
             self.status_label.config(text="Monitoring stopped")
         else:
@@ -494,6 +626,8 @@ class AdvancedScreenClicker:
                 missing.append("Image 1")
             if not self.image2:
                 missing.append("Image 2")
+            if not self.image3:
+                missing.append("Image 3")  # Check for image3
             if not self.position3:
                 missing.append("Position 3")
             
@@ -507,6 +641,7 @@ class AdvancedScreenClicker:
             self.start_btn.config(text="Stop Monitoring")
             self.image1_btn.config(state=tk.DISABLED)
             self.image2_btn.config(state=tk.DISABLED)
+            self.image3_btn.config(state=tk.DISABLED)  # Disable image3 button
             self.pos3_btn.config(state=tk.DISABLED)
             
             # Start the monitoring thread
@@ -544,6 +679,19 @@ class AdvancedScreenClicker:
                         # Found Image 2, perform click and move to next state
                         self.root.after(0, lambda: self.status_label.config(text="Image 2 found! Clicking..."))
                         self.click_image2()
+                        state = "waiting_for_image3"
+                
+                elif state == "waiting_for_image3":
+                    # Update status via the main thread
+                    self.root.after(0, lambda: self.status_label.config(text="Looking for Image 3..."))
+                    
+                    # Check if Image 3 appears
+                    found_image3 = self.check_for_image3()
+                    
+                    if found_image3:
+                        # Found Image 3, perform click and move to next state
+                        self.root.after(0, lambda: self.status_label.config(text="Image 3 found! Clicking..."))
+                        self.click_image3()
                         state = "clicking_position3"
                 
                 elif state == "clicking_position3":
@@ -621,6 +769,23 @@ class AdvancedScreenClicker:
             print(f"Error checking for image2: {str(e)}")
             return False
     
+    def check_for_image3(self):
+        """Check if Image 3 appears at its position"""
+        if not self.image3 or not self.image3_position:
+            return False
+        
+        try:
+            # Capture the current screen at the image3 position
+            x1, y1, x2, y2 = self.image3_position
+            current_screenshot = ImageGrab.grab(bbox=(x1, y1, x2, y2))
+            
+            # Compare images
+            return self.compare_images(self.image3, current_screenshot)
+            
+        except Exception as e:
+            print(f"Error checking for image3: {str(e)}")
+            return False
+    
     def click_image1(self):
         """Click in the center of Image 1"""
         if not self.image1_position:
@@ -662,6 +827,27 @@ class AdvancedScreenClicker:
             
         except Exception as e:
             print(f"Error clicking image2: {str(e)}")
+    
+    def click_image3(self):
+        """Click in the center of Image 3"""
+        if not self.image3_position:
+            return
+        
+        try:
+            # Calculate center of image3
+            x1, y1, x2, y2 = self.image3_position
+            center_x = (x1 + x2) // 2
+            center_y = (y1 + y2) // 2
+            
+            # Move mouse and left-click
+            pyautogui.moveTo(center_x, center_y)
+            pyautogui.leftClick()
+            
+            # Wait for the specified click delay
+            time.sleep(self.click_delay)
+            
+        except Exception as e:
+            print(f"Error clicking image3: {str(e)}")
     
     def click_position3(self):
         """Click at Position 3"""
@@ -739,6 +925,7 @@ class AdvancedScreenClicker:
         self.start_btn.config(text="Start Monitoring")
         self.image1_btn.config(state=tk.NORMAL)
         self.image2_btn.config(state=tk.NORMAL)
+        self.image3_btn.config(state=tk.NORMAL)  # Enable image3 button
         self.pos3_btn.config(state=tk.NORMAL)
     
     def update_ui_from_settings(self):
@@ -758,7 +945,7 @@ class AdvancedScreenClicker:
                 
                 if not hasattr(self, 'image1_display'):
                     self.image1_display = Label(self.root)
-                    self.image1_display.place(x=10, y=350)
+                    self.image1_display.place(x=350, y=50)
                     
                 self.image1_display.config(image=self.image1_thumbnail)
         
@@ -775,9 +962,26 @@ class AdvancedScreenClicker:
                 
                 if not hasattr(self, 'image2_display'):
                     self.image2_display = Label(self.root)
-                    self.image2_display.place(x=120, y=350)
+                    self.image2_display.place(x=350, y=160)
                     
                 self.image2_display.config(image=self.image2_thumbnail)
+
+        # Update image3 position label
+        if self.image3_position:
+            self.image3_pos_label.config(text=f"({self.image3_position[0]}, {self.image3_position[1]}) to ({self.image3_position[2]}, {self.image3_position[3]})")
+            settings_loaded = True
+            
+            # Display thumbnail if we have image3
+            if self.image3:
+                thumbnail = self.image3.copy()
+                thumbnail.thumbnail((100, 100))
+                self.image3_thumbnail = ImageTk.PhotoImage(thumbnail)
+                
+                if not hasattr(self, 'image3_display'):
+                    self.image3_display = Label(self.root)
+                    self.image3_display.place(x=350, y=270)
+                    
+                self.image3_display.config(image=self.image3_thumbnail)
         
         # Update position3 label
         if self.position3:
@@ -798,12 +1002,14 @@ class AdvancedScreenClicker:
     def save_settings_with_feedback(self):
         """Save settings and provide feedback to the user"""
         # Check if we have anything to save
-        if not (self.image1 and self.image2 and self.position3):
+        if not (self.image1 and self.image2 and self.image3 and self.position3):
             missing = []
             if not self.image1:
                 missing.append("Image 1")
             if not self.image2:
                 missing.append("Image 2")
+            if not self.image3:
+                missing.append("Image 3")
             if not self.position3:
                 missing.append("Position 3")
                 

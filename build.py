@@ -7,20 +7,23 @@ def build_executable():
     
     # Command to build the executable
     cmd = [
-        "pyinstaller",
+        sys.executable,
+        "-m",
+        "PyInstaller",
         "--onefile",
         "--windowed",
         "--icon=icon.ico",
-        "--name=ScreenClicker",
+        "--name=AdvancedScreenClicker",
         "--add-data=icon.ico;.",
-        "screen_clicker.py"
+        "--hidden-import=pytesseract",
+        "advanced_screen_clicker.py"
     ]
     
     # Run the command
     try:
         subprocess.run(cmd, check=True)
         print("\nBuild successful!")
-        print(f"Executable created at: {os.path.abspath('dist/ScreenClicker.exe')}")
+        print(f"Executable created at: {os.path.abspath('dist/AdvancedScreenClicker.exe')}")
     except subprocess.CalledProcessError as e:
         print(f"Error building executable: {e}")
         return False

@@ -1,6 +1,7 @@
-pyautogui==0.9.53
-pillow==9.4.0
-numpy==1.24.2
-pyinstaller==5.9.0
-scikit-image==0.25.2
-opencv-python==4.9.0.80
+pyautogui>=0.9.53
+pillow>=9.4.0
+numpy>=1.24.2
+pyinstaller>=5.9.0
+scikit-image>=0.25.2
+opencv-python>=4.9.0.80
+pytesseract>=0.3.10
